@@ -1,0 +1,12 @@
+[
+  {
+    "type": "add",
+    "lpToken": "0xbdc8483c96864a00910d2f16f003823cdf688604",
+    "allocationPoints": 10
+  },
+  {
+    "type": "edit",
+    "pid": 0,
+    "allocationPoints": 5
+  }
+]
