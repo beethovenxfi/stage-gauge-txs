@@ -1,6 +1,6 @@
 {
   "name": "@beethovenx/stage-gauge-txs",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "CLI to stage gauge vote changes on MasterChefOperator",
   "author": "0xSkly",
   "repository": "https://github.com/beethovenxfi/stage-gauge-txs",

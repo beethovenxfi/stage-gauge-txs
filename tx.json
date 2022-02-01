@@ -5,8 +5,8 @@
     "allocationPoints": 10
   },
   {
-    "type": "edit",
-    "pid": 0,
-    "allocationPoints": 5
+    "type": "add",
+    "lpToken": "0x33276d43ada054a281d40a11d48310cdc0156fc2",
+    "allocationPoints": 20
   }
 ]
