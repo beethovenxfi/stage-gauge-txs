@@ -1,5 +1,5 @@
 {
-  "name": "masterchef-txs",
+  "name": "@beethovenx/stage-gauge-txs",
   "version": "1.0.0",
   "description": "CLI to stage gauge vote changes on MasterChefOperator",
   "author": "0xSkly",
