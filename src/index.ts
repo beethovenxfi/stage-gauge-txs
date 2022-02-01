@@ -1,17 +1,12 @@
 #! /usr/bin/env node
 
 import * as path from "path";
-import { Option, program } from "commander";
+import { program } from "commander";
 import * as fs from "fs";
 import moment from "moment";
-import { ethers } from "hardhat";
-import { config } from "./config";
-import { MasterChefOperator } from "../types";
-import { BigNumberish } from "ethers";
-// @ts-ignore
-// import ethProvider from "eth-provider";
-// import {ethers} from "hardhat";
-// const frame = ethProvider("frame");
+import { BigNumberish, ethers } from "ethers";
+import { getConfig } from "./config";
+import masterChefOperatorAbi from "../abi/MasterChefOperator.json";
 
 const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:1248");
 const signer = provider.getSigner();
@@ -36,6 +31,7 @@ async function main() {
       "-f, --file <file>",
       "source json file for farm adjustments (relative path)"
     )
+    .option("-n, --network <network>", "Network", "fantom")
     .option(
       "-e, --eta <eta>",
       "Eta (default 8h)",
@@ -48,15 +44,18 @@ async function main() {
   program.parse(process.argv);
 
   const programOptions = program.opts();
+  const config = getConfig(programOptions.network);
   const filePath = path.join(process.cwd(), programOptions.file);
   const plainFile = fs.readFileSync(filePath, "utf-8");
   const farmAdjustments: FarmAdjustment[] = JSON.parse(plainFile);
 
   console.log("addr", config.contractAddresses.MasterChefOperator);
-  const operator = (await ethers.getContractAt(
-    "MasterChefOperator",
-    config.contractAddresses.MasterChefOperator
-  )) as MasterChefOperator;
+
+  const operator = new ethers.Contract(
+    config.contractAddresses.MasterChefOperator,
+    masterChefOperatorAbi,
+    signer
+  );
   console.log("got contract");
 
   const farmAdditions: Array<{
@@ -102,17 +101,19 @@ async function main() {
 
   if (farmAdditions.length > 0) {
     console.log("staging farm additions, please sign...");
-    const stageFarmAdditionsTx = await operator
-      .connect(signer)
-      .stageFarmAdditions(farmAdditions, programOptions.eta);
+    const stageFarmAdditionsTx = await operator.stageFarmAdditions(
+      farmAdditions,
+      programOptions.eta
+    );
     await stageFarmAdditionsTx.wait();
     console.log("done");
   }
   if (farmModifications.length > 0) {
     console.log("staging farm modifications, please sign...");
-    const stageFarmModificationsTx = await operator
-      .connect(signer)
-      .stageFarmModifications(farmModifications, programOptions.eta);
+    const stageFarmModificationsTx = await operator.stageFarmModifications(
+      farmModifications,
+      programOptions.eta
+    );
     await stageFarmModificationsTx.wait();
     console.log("done");
   }
