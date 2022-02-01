@@ -46,9 +46,7 @@ async function main() {
     const filePath = path.join(process.cwd(), programOptions.file);
     const plainFile = fs.readFileSync(filePath, "utf-8");
     const farmAdjustments = JSON.parse(plainFile);
-    console.log("addr", config.contractAddresses.MasterChefOperator);
     const operator = new ethers_1.ethers.Contract(config.contractAddresses.MasterChefOperator, MasterChefOperator_json_1.default, signer);
-    console.log("got contract");
     const farmAdditions = [];
     const farmModifications = [];
     for (let farmAdjustment of farmAdjustments) {
