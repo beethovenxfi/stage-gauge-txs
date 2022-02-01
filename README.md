@@ -4,6 +4,8 @@ MasterChef multisig.
     npm install -g @beethovenx/stage-gauge-txs
 
 ## Usage
+**This script requires usage of the Frame wallet!**
+
 After installing globally
 
 `stage-gauge-txs -f changes.json -n <network> -e <eta>`
@@ -48,5 +50,3 @@ edit:
   }
 ]
 ```
-
-#### Fields
