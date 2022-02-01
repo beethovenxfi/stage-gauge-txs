@@ -9,7 +9,7 @@ const networkConfig = {
     },
     rinkeby: {
         contractAddresses: {
-            MasterChefOperator: "0xeC115878129c5F06f270aF426171120c2B703D31",
+            MasterChefOperator: "0xF6F17Fa57c2172999BfE6DDF809b6986C4CA33e9",
         },
     },
 };

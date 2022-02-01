@@ -36,13 +36,13 @@ async function main() {
     commander_1.program
         .requiredOption("-f, --file <file>", "source json file for farm adjustments (relative path)")
         .option("-n, --network <network>", "Network", "fantom")
-        .option("-e, --eta <eta>", "Eta (default 8h)", moment_1.default()
+        .option("-e, --eta <eta>", "Eta (default 8h)", (0, moment_1.default)()
         .add(8 * 60, "minutes")
         .unix()
         .toString());
     commander_1.program.parse(process.argv);
     const programOptions = commander_1.program.opts();
-    const config = config_1.getConfig(programOptions.network);
+    const config = (0, config_1.getConfig)(programOptions.network);
     const filePath = path.join(process.cwd(), programOptions.file);
     const plainFile = fs.readFileSync(filePath, "utf-8");
     const farmAdjustments = JSON.parse(plainFile);
