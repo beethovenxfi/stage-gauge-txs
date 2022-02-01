@@ -20,7 +20,19 @@ with npx
 ```
 
 #### Config File
-The file has to follow this structure 
+The file is an array of farm additions or modifications with the following fields: 
+```
+ type: edit | add
+ add: 
+    lpToken: Address of BPT
+    allocationPoints: distribution weight
+    rewarder: Address of rewarder contract - optional, defaults to Zero Address
+edit:
+    pid: pool ID
+    allocationPoints: distribution weight
+    rewarder: Address of rewarder - optional, if provided will be overwritten!
+```
+#### Example
 ```json
 [
   {
@@ -37,9 +49,4 @@ The file has to follow this structure
 ]
 ```
 
-Where the `rewarder` is optional for both types. 
-
-ATTENTION:
-
-For adding of farms: rewarder defaults to zero address
-For editing of farms: **If you provide the rewarder it will be overwritten**!
+#### Fields
