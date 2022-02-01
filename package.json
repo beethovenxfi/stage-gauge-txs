@@ -1,13 +1,12 @@
 {
   "name": "masterchef-txs",
   "version": "1.0.0",
-  "description": "",
+  "description": "CLI to stage gauge vote changes on MasterChefOperator",
   "author": "0xSkly",
   "license": "MIT",
-  "bin": "dist/src/operator/operator.js",
+  "bin": "dist/src/index.js",
   "scripts": {
-    "gnosis": "ts-node --transpile-only src/gnosis/gnosis.ts",
-    "operator": "ts-node -r dotenv/config --transpile-only src/operator/operator.ts"
+    "operator": "ts-node -r dotenv/config --transpile-only src/index.ts"
   },
   "dependencies": {
     "@gnosis.pm/safe-core-sdk": "^1.3.0",

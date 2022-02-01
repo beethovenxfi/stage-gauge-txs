@@ -5,8 +5,8 @@ import { Option, program } from "commander";
 import * as fs from "fs";
 import moment from "moment";
 import { ethers } from "hardhat";
-import { config } from "../config";
-import { MasterChefOperator } from "../../types";
+import { config } from "./config";
+import { MasterChefOperator } from "../types";
 import { BigNumberish } from "ethers";
 // @ts-ignore
 // import ethProvider from "eth-provider";
