@@ -4,7 +4,7 @@ exports.getConfig = void 0;
 const networkConfig = {
     fantom: {
         contractAddresses: {
-            MasterChefOperator: "",
+            MasterChefOperator: "0x24Dce9214bA5B93B4ee7F1A7A00c9BeB1c8F709C",
         },
     },
     rinkeby: {

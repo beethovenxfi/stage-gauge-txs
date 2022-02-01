@@ -8,12 +8,12 @@ const networkConfig: Record<
 > = {
   fantom: {
     contractAddresses: {
-      MasterChefOperator: "",
+      MasterChefOperator: "0x24Dce9214bA5B93B4ee7F1A7A00c9BeB1c8F709C",
     },
   },
   rinkeby: {
     contractAddresses: {
-      MasterChefOperator: "0x05C363a6BFd0B294Fe09487339c16E08E25CC500",
+      MasterChefOperator: "0xF6F17Fa57c2172999BfE6DDF809b6986C4CA33e9",
     },
   },
 };
