@@ -49,14 +49,11 @@ async function main() {
   const plainFile = fs.readFileSync(filePath, "utf-8");
   const farmAdjustments: FarmAdjustment[] = JSON.parse(plainFile);
 
-  console.log("addr", config.contractAddresses.MasterChefOperator);
-
   const operator = new ethers.Contract(
     config.contractAddresses.MasterChefOperator,
     masterChefOperatorAbi,
     signer
   );
-  console.log("got contract");
 
   const farmAdditions: Array<{
     lpToken: string;
