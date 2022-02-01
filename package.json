@@ -1,14 +1,18 @@
 {
   "name": "@beethovenx/stage-gauge-txs",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "CLI to stage gauge vote changes on MasterChefOperator",
   "author": "0xSkly",
   "repository": "https://github.com/beethovenxfi/stage-gauge-txs",
   "license": "MIT",
-  "bin": {"stage-gauge-txs": "dist/src/index.js"},
+  "bin": {
+    "stage-gauge-txs": "dist/src/index.js"
+  },
   "private": false,
   "scripts": {
-    "operator": "ts-node --transpile-only src/index.ts"
+    "build": "tsc",
+    "operator": "ts-node --transpile-only src/index.ts",
+    "prepublish": "yarn build"
   },
   "dependencies": {
     "commander": "^9.0.0",
