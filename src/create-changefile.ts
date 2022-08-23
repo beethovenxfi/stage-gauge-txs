@@ -35,7 +35,7 @@ export async function createChangefile(sheetName: string): Promise<string> {
             input: process.stdin,
             output: process.stdout,
         });
-        await rl.question('Enter the code from that page here: ', (code: any) => {
+        await rl.question('Find code in URL at last redirect after code=<CODE>. Enter here: ', (code: any) => {
             rl.close();
             oAuth2Client.getToken(code, async (err: any, token: any) => {
                 if (err) return console.error('Error while trying to retrieve access token', err);
