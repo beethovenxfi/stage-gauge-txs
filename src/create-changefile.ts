@@ -1,6 +1,7 @@
 import { BigNumber, Contract, ethers } from 'ethers';
 import masterchefAbi from '../abi/MasterChef.json';
 import { google } from 'googleapis';
+import credentials from '../credentials.json';
 
 const fs = require('fs');
 const readline = require('readline');
@@ -10,9 +11,7 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 const TOKEN_PATH = 'token.json';
 
 export async function createChangefile(sheetName: string): Promise<string> {
-    const credentialContent = fs.readFileSync('credentials.json');
-
-    const { client_secret, client_id, redirect_uris } = JSON.parse(credentialContent).installed;
+    const { client_secret, client_id, redirect_uris } = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
 
     let authToken;
@@ -35,14 +34,18 @@ export async function createChangefile(sheetName: string): Promise<string> {
             input: process.stdin,
             output: process.stdout,
         });
-        await rl.question('Find code in URL at last redirect after code=<CODE>. Enter here: ', (code: any) => {
+        rl.question('Find code in URL at last redirect after code=<CODE>. Enter here: ', (code: any) => {
             rl.close();
             oAuth2Client.getToken(code, async (err: any, token: any) => {
-                if (err) return console.error('Error while trying to retrieve access token', err);
+                if (err) {
+                    return console.error('Error while trying to retrieve access token', err);
+                }
                 oAuth2Client.setCredentials(token);
                 // Store the token to disk for later program executions
                 fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err: any) => {
-                    if (err) return console.error(err);
+                    if (err) {
+                        return console.error(err);
+                    }
                     console.log('Token stored to', TOKEN_PATH);
                 });
             });
@@ -85,8 +88,8 @@ async function createJsonOutput(auth: any, sheetName: string, filename: string):
             const lpToken = row[9];
 
             if (masterchefPoolId) {
-                const poolInfo = await masterchefContract.poolInfo(row[2]);
-                const currentAllocationPoints = BigNumber.from(poolInfo.allocPoint).toString();
+                const poolInfo = await masterchefContract.poolInfo(masterchefPoolId);
+                const currentAllocationPoints = poolInfo.allocPoint.toString();
 
                 if (newAllocationPoints !== currentAllocationPoints) {
                     outJson.push({
@@ -98,14 +101,15 @@ async function createJsonOutput(auth: any, sheetName: string, filename: string):
                         `Need to change alloc for pool ${poolName} to ${newAllocationPoints} from ${currentAllocationPoints}`,
                     );
                 }
-            }
-            if (isNew) {
+            } else if (isNew) {
                 outJson.push({
                     type: 'add',
                     allocationPoints: parseFloat(newAllocationPoints),
                     lpToken: lpToken,
                 });
                 console.log(`Adding new farm for ${poolName} with lpToken ${lpToken}`);
+            } else {
+                throw new Error(`Row had both a new flag as well as a pool id: ${row}`);
             }
         }
         fs.writeFileSync(filename, JSON.stringify(outJson, null, 2));

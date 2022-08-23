@@ -45,15 +45,13 @@ async function main() {
     const config = getConfig(programOptions.network);
     const filePath = path.join(process.cwd(), programOptions.file);
     let plainFile: string = '';
-    try {
-        plainFile = fs.readFileSync(filePath, 'utf-8');
-    } catch (e) {
-        // could not find file, let's see if a sheetname was provided
-        console.log('Could not find a source file, assuming a sheet name was provided');
-    }
-    const createdFilename = await createChangefile(programOptions.file);
 
-    plainFile = fs.readFileSync(createdFilename, 'utf-8');
+    if (programOptions.file.endsWith('.json')) {
+        plainFile = fs.readFileSync(filePath, 'utf-8');
+    } else {
+        const createdFilename = await createChangefile(programOptions.file);
+        plainFile = fs.readFileSync(createdFilename, 'utf-8');
+    }
 
     const farmAdjustments: FarmAdjustment[] = JSON.parse(plainFile);
 
