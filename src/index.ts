@@ -7,7 +7,8 @@ import moment from 'moment';
 import { BigNumberish, ethers } from 'ethers';
 import { getConfig } from './config';
 import masterChefOperatorAbi from '../abi/MasterChefOperator.json';
-import { createChangefile } from './create-changefile';
+import { createGaugeTxsFromGoogleSheet } from './create-gauge-txs-from-google-sheet';
+import inquirer from 'inquirer';
 
 const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:1248');
 const signer = provider.getSigner();
@@ -24,11 +25,12 @@ type FarmEdit = {
     allocationPoints?: number;
     rewarder?: string;
 };
-type FarmAdjustment = FarmAdd | FarmEdit;
+export type FarmAdjustment = FarmAdd | FarmEdit;
 
 async function main() {
     program
-        .requiredOption('-f, --file <file>', 'source json file for farm adjustments (relative path)')
+        .requiredOption('-s, --source <source>', 'source json (relative pt) or google sheets page ID')
+        .option('-c, --config <config>', 'Config for api access to google sheets')
         .option('-n, --network <network>', 'Network', 'fantom')
         .option(
             '-e, --eta <eta>',
@@ -43,17 +45,24 @@ async function main() {
 
     const programOptions = program.opts();
     const config = getConfig(programOptions.network);
-    const filePath = path.join(process.cwd(), programOptions.file);
-    let plainFile: string = '';
+    let farmAdjustments: FarmAdjustment[];
 
-    if (programOptions.file.endsWith('.json')) {
-        plainFile = fs.readFileSync(filePath, 'utf-8');
+    if (programOptions.source.endsWith('.json')) {
+        const filePath = path.join(process.cwd(), programOptions.source);
+        farmAdjustments = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
     } else {
-        const createdFilename = await createChangefile(programOptions.file);
-        plainFile = fs.readFileSync(createdFilename, 'utf-8');
+        farmAdjustments = await createGaugeTxsFromGoogleSheet(programOptions.source);
+        const confirmProceed = await inquirer.prompt([
+            {
+                type: 'confirm',
+                name: 'proceed',
+                message: 'Farm adjustments generated from google sheet, please review! Proceed ?',
+            },
+        ]);
+        if (!confirmProceed.proceed) {
+            return;
+        }
     }
-
-    const farmAdjustments: FarmAdjustment[] = JSON.parse(plainFile);
 
     const operator = new ethers.Contract(config.contractAddresses.MasterChefOperator, masterChefOperatorAbi, signer);
 
@@ -94,6 +103,7 @@ async function main() {
         }
     }
 
+    console.log(`Staging farm adjustments with eta ${programOptions.eta}`);
     if (farmAdditions.length > 0) {
         console.log('staging farm additions, please sign...');
         const stageFarmAdditionsTx = await operator.stageFarmAdditions(farmAdditions, programOptions.eta);
