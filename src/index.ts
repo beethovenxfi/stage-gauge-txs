@@ -103,6 +103,7 @@ async function main() {
         }
     }
 
+    console.log(`Staging farm adjustments with eta ${programOptions.eta}`);
     if (farmAdditions.length > 0) {
         console.log('staging farm additions, please sign...');
         const stageFarmAdditionsTx = await operator.stageFarmAdditions(farmAdditions, programOptions.eta);
