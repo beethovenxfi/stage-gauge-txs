@@ -167,7 +167,7 @@ async function createJsonOutput(
                         allocationPoints: parseFloat(newAllocationPoints),
                     });
                     console.log(
-                        `Change alloc for pool ${poolName} to ${newAllocationPoints} from ${currentAllocationPoints}`,
+                        `Change alloc for pool ${poolName} from ${currentAllocationPoints} to ${newAllocationPoints} `,
                     );
                     editPoolCount++;
                 } else {
@@ -189,6 +189,24 @@ async function createJsonOutput(
         console.log(
             `\n------------------------------------------------------------\nTotal pools: ${rows.length}\nUnchanged pools: ${unchangedPoolCount}\nNew pools: ${newPoolCount}\nEdited pools: ${editPoolCount}\n------------------------------------------------------------\n`,
         );
+
+        console.log(`Double checking from masterchef....`);
+
+        const poolLength = await masterchefContract.poolLength();
+
+        for (let poolId = 0; poolId < poolLength; poolId++) {
+            const poolInfo = await masterchefContract.poolInfo(poolId);
+            const allocPointForPool = poolInfo.allocPoint;
+
+            const poolInSheet = rows.find((row) => row[2] === poolId.toString());
+            if (!poolInSheet && allocPointForPool > 0) {
+                console.log(
+                    `ATTENTION: Did not find pool id ${poolId} in sheet. Alloc points on MC are ${allocPointForPool}`,
+                );
+            }
+        }
+        console.log(`Done.`);
+
         const writeFileAnswer = await inquirer.prompt([
             { type: 'confirm', name: 'writeFile', message: 'Write changes to file', default: true },
             {
