@@ -79,7 +79,7 @@ export async function createGaugeTxsFromGoogleSheet(sheetName: string, configFil
                 type: 'input',
                 name: 'sheetRange',
                 message: 'Sheet range',
-                default: '!A2:J',
+                default: '!A2:K',
             },
         ]);
 
@@ -134,7 +134,7 @@ async function createJsonOutput(
     } catch (e) {
         throw Error('Could not find sheet name provided.');
     }
-    const rows = result.data.values?.filter((row) => row.length >= 10);
+    const rows = result.data.values?.filter((row) => row.length >= 11);
 
     if (rows?.length) {
         console.log('Comparing google sheet entries with master chef contract...');
@@ -153,8 +153,8 @@ async function createJsonOutput(
             const isNew = row[0];
             const poolName = row[1];
             const masterchefPoolId = row[2];
-            const newAllocationPoints = row[7];
-            const lpToken = row[9];
+            const newAllocationPoints = row[8];
+            const lpToken = row[10];
 
             if (masterchefPoolId) {
                 const poolInfo = await masterchefContract.poolInfo(masterchefPoolId);
@@ -180,7 +180,9 @@ async function createJsonOutput(
                     allocationPoints: parseFloat(newAllocationPoints),
                     lpToken: lpToken,
                 });
-                console.log(`Adding new farm for ${poolName} with lpToken ${lpToken}`);
+                console.log(
+                    `Adding new farm for ${poolName} with lpToken ${lpToken} and ${newAllocationPoints} points`,
+                );
                 newPoolCount++;
             } else {
                 throw new Error(`Row has nether a new flag or a pool id: ${row}`);
