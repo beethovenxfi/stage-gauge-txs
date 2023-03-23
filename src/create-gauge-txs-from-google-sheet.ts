@@ -5,116 +5,47 @@ import os from 'os';
 import fs from 'fs';
 import inquirer from 'inquirer';
 import { FarmAdjustment } from './index';
+import { JWT } from 'google-auth-library';
+import { googleJwtClient } from './google-jwt-client';
 
-type GoogleSheetsApiConfig = {
-    project: {
-        clientId: string;
-        clientSecret: string;
-        redirectUri?: string;
-        sheetId: string;
-        sheetRange: string;
-    };
-    credentials: {
-        refresh_token?: string | null;
-        expiry_date?: number | null;
-        access_token?: string | null;
-        token_type?: string | null;
-        id_token?: string | null;
-        scope?: string;
-    };
+type GoogleSheetCredentials = {
+    type: string;
+    project_id: string;
+    private_key_id: string;
+    private_key: string;
+    client_email: string;
+    client_id: string;
+    auth_uri: string;
+    token_uri: string;
+    auth_provider_x509_cert_url: string;
+    client_x509_cert_url: string;
 };
-
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
-const DEFAULT_CONFIG_DIR = `${os.homedir()}/.stage-gauge-txs`;
-const DEFAULT_CONFIG_FILE = 'config.json';
-const DEFAULT_FULL_CONFIG_PATH = `${DEFAULT_CONFIG_DIR}/${DEFAULT_CONFIG_FILE}`;
+const DEFAULT_CREDENTIAL_DIR = `${os.homedir()}/.stage-gauge-txs`;
+const DEFAULT_CREDENTIAL_FILE = 'credentials.json';
+const DEFAULT_FULL_CREDENTIAL_PATH = `${DEFAULT_CREDENTIAL_DIR}/${DEFAULT_CREDENTIAL_FILE}`;
 
-export async function createGaugeTxsFromGoogleSheet(sheetName: string, configFile?: string): Promise<FarmAdjustment[]> {
-    let oAuth2Client;
-    let config: GoogleSheetsApiConfig;
+export async function createGaugeTxsFromGoogleSheet(
+    sheetName: string,
+    credentialFile?: string,
+): Promise<FarmAdjustment[]> {
+    let credentials: GoogleSheetCredentials;
+    let jwtClient: JWT;
 
-    if (configFile) {
-        if (!fs.existsSync(configFile)) {
-            throw new Error(`Config file does not exist at path ${configFile}`);
+    if (credentialFile) {
+        if (!fs.existsSync(credentialFile)) {
+            throw new Error(`Config file does not exist at path ${credentialFile}`);
         }
-        config = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
-        oAuth2Client = new google.auth.OAuth2(
-            config.project.clientId,
-            config.project.clientSecret,
-            config.project.redirectUri ?? 'http://localhost',
-        );
-        oAuth2Client.setCredentials(config.credentials);
-    } else if (fs.existsSync(DEFAULT_FULL_CONFIG_PATH)) {
-        config = JSON.parse(fs.readFileSync(DEFAULT_FULL_CONFIG_PATH, 'utf-8'));
-        oAuth2Client = new google.auth.OAuth2(
-            config.project.clientId,
-            config.project.clientSecret,
-            config.project.redirectUri ?? 'http://localhost',
-        );
-        oAuth2Client.setCredentials(config.credentials);
+        credentials = JSON.parse(fs.readFileSync(credentialFile, 'utf-8'));
+        jwtClient = await googleJwtClient.getAuthorizedSheetsClient(credentials.client_email, credentials.private_key);
+    } else if (fs.existsSync(DEFAULT_FULL_CREDENTIAL_PATH)) {
+        credentials = JSON.parse(fs.readFileSync(DEFAULT_FULL_CREDENTIAL_PATH, 'utf-8'));
+        jwtClient = await googleJwtClient.getAuthorizedSheetsClient(credentials.client_email, credentials.private_key);
     } else {
-        console.log('Configuring you google sheets access.');
-        if (!fs.existsSync(DEFAULT_CONFIG_DIR)) {
-            fs.mkdirSync(DEFAULT_CONFIG_DIR, {});
-        }
-        const { clientId, clientSecret, sheetId, sheetRange } = await inquirer.prompt([
-            {
-                type: 'input',
-                name: 'clientId',
-                message: 'Client ID',
-                default: '405692522261-v1prtn1h5oqqt7c3n81k2mue6ne269g4.apps.googleusercontent.com',
-            },
-            {
-                type: 'input',
-                name: 'clientSecret',
-                message: 'Client Secret',
-            },
-            {
-                type: 'input',
-                name: 'sheetId',
-                message: 'Sheet ID',
-                default: '1PwKizspl84t7AG2QlQMlr77OxjcuEY_mq8JwTu9ptQM',
-            },
-            {
-                type: 'input',
-                name: 'sheetRange',
-                message: 'Sheet range',
-                default: '!A2:K',
-            },
-        ]);
-
-        oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, 'http://localhost');
-        const authUrl = oAuth2Client.generateAuthUrl({
-            access_type: 'offline',
-            scope: SCOPES,
-        });
-
-        console.log('Authorize this app by visiting this url:', authUrl);
-
-        const answer = await inquirer.prompt([
-            {
-                type: 'input',
-                name: 'code',
-                message: 'Find code in URL at last redirect after code=<CODE>. Enter here: ',
-            },
-        ]);
-
-        const tokenResponse = await oAuth2Client.getToken(answer.code);
-        config = {
-            project: {
-                clientId,
-                clientSecret,
-                sheetId,
-                sheetRange,
-            },
-            credentials: tokenResponse.tokens,
-        };
-        console.log(`Writing config to ${DEFAULT_FULL_CONFIG_PATH}`);
-        fs.writeFileSync(DEFAULT_FULL_CONFIG_PATH, JSON.stringify(config));
-        oAuth2Client.setCredentials(tokenResponse.tokens);
+        throw Error('Could not find credentials file.');
     }
 
-    return createJsonOutput(oAuth2Client, sheetName, config.project.sheetId, config.project.sheetRange);
+    return createJsonOutput(jwtClient, sheetName, '1PwKizspl84t7AG2QlQMlr77OxjcuEY_mq8JwTu9ptQM', '!A2:K');
 }
 
 async function createJsonOutput(
@@ -124,12 +55,13 @@ async function createJsonOutput(
     sheetRange: string,
 ): Promise<FarmAdjustment[]> {
     console.log('Generating farm adjustments from google sheet.');
-    const sheets = google.sheets({ version: 'v4', auth });
+    const sheets = google.sheets({ version: 'v4' });
     let result;
     try {
         result = await sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
             range: `${sheetName}${sheetRange}`,
+            auth: auth,
         });
     } catch (e) {
         throw Error('Could not find sheet name provided.');
