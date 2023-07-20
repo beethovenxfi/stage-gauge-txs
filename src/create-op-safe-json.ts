@@ -45,11 +45,10 @@ interface Input {
 }
 
 export interface ContractInputsValues {
-    recipient?: string;
+    spender?: string;
     amount?: string;
-    _token?: string;
-    to?: string;
-    value?: string;
+    _reward_token?: string;
+    _amount?: string;
 }
 
 type GoogleSheetCredentials = {
@@ -86,7 +85,7 @@ export async function createTxnBatchJsonFromGoogleSheet(sheetName: string, crede
         throw Error('Could not find credentials file.');
     }
 
-    createJsonOutput(jwtClient, sheetName, '1rhIgAvr0BQ2EPATqGyisiQEV0XFVMqmGgDuVpO9-inU', '!A9:G');
+    createJsonOutput(jwtClient, sheetName, '1rhIgAvr0BQ2EPATqGyisiQEV0XFVMqmGgDuVpO9-inU', '!A27:G');
 }
 
 async function createJsonOutput(auth: any, sheetName: string, sheetId: string, sheetRange: string): Promise<void> {
@@ -109,7 +108,7 @@ async function createJsonOutput(auth: any, sheetName: string, sheetId: string, s
         let gaugeTxns: Transaction[] = [];
 
         for (const row of rows) {
-            const streamerAddress: string = row[1];
+            const gaugeAddress: string = row[1];
             const rewardTokenAddress: string = row[3];
             const rewardTokenDecimals: number = row[4];
             const rewardTokenAmount: number = row[5];
@@ -121,7 +120,7 @@ async function createJsonOutput(auth: any, sheetName: string, sheetId: string, s
             if (now < epochStartTimestamp) {
                 const rewardTokenAmountScaled = parseUnits(`${rewardTokenAmount}`, rewardTokenDecimals);
 
-                // add the transfer transcation
+                // add the approve transcation
                 gaugeTxns.push({
                     to: rewardTokenAddress,
                     value: '0',
@@ -130,7 +129,7 @@ async function createJsonOutput(auth: any, sheetName: string, sheetId: string, s
                         inputs: [
                             {
                                 internalType: 'address',
-                                name: 'to',
+                                name: 'spender',
                                 type: 'address',
                             },
                             {
@@ -139,32 +138,37 @@ async function createJsonOutput(auth: any, sheetName: string, sheetId: string, s
                                 type: 'uint256',
                             },
                         ],
-                        name: 'transfer',
+                        name: 'approve',
                         payable: false,
                     },
                     contractInputsValues: {
-                        to: streamerAddress,
+                        spender: gaugeAddress,
                         amount: rewardTokenAmountScaled.toString(),
                     },
                 });
 
-                // add notify transaction
+                // add deposit_reward_token transaction
                 gaugeTxns.push({
-                    to: streamerAddress,
+                    to: gaugeAddress,
                     value: '0',
                     data: null,
                     contractMethod: {
                         inputs: [
                             {
-                                name: '_token',
+                                name: '_reward_token',
                                 type: 'address',
                             },
+                            {
+                                name: '_amount',
+                                type: 'uint256',
+                            },
                         ],
-                        name: 'notify_reward_amount',
+                        name: 'deposit_reward_token',
                         payable: false,
                     },
                     contractInputsValues: {
-                        _token: rewardTokenAddress,
+                        _reward_token: rewardTokenAddress,
+                        _amount: rewardTokenAmountScaled.toString(),
                     },
                 });
             }
