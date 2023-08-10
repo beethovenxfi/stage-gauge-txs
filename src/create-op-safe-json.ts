@@ -85,7 +85,7 @@ export async function createTxnBatchJsonFromGoogleSheet(sheetName: string, crede
         throw Error('Could not find credentials file.');
     }
 
-    createJsonOutput(jwtClient, sheetName, '1rhIgAvr0BQ2EPATqGyisiQEV0XFVMqmGgDuVpO9-inU', '!A27:G');
+    createJsonOutput(jwtClient, sheetName, '1rhIgAvr0BQ2EPATqGyisiQEV0XFVMqmGgDuVpO9-inU', '!A:G');
 }
 
 async function createJsonOutput(auth: any, sheetName: string, sheetId: string, sheetRange: string): Promise<void> {
@@ -106,8 +106,13 @@ async function createJsonOutput(auth: any, sheetName: string, sheetId: string, s
 
     if (rows?.length) {
         let gaugeTxns: Transaction[] = [];
+        let canProcess = false;
 
         for (const row of rows) {
+            if (!canProcess) {
+                canProcess = row[0] === 'Pool name';
+                continue;
+            }
             const gaugeAddress: string = row[1];
             const rewardTokenAddress: string = row[3];
             const rewardTokenDecimals: number = row[4];
