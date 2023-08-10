@@ -64,7 +64,7 @@ type GoogleSheetCredentials = {
     client_x509_cert_url: string;
 };
 
-const DEFAULT_CONFIG_DIR = `${os.homedir()}/.op-gauge-txs`;
+const DEFAULT_CONFIG_DIR = `${os.homedir()}/.stage-gauge-txs`;
 const DEFAULT_CREDENTIALS_FILE = 'credentials.json';
 const DEFAULT_FULL_CREDENTIAL_PATH = `${DEFAULT_CONFIG_DIR}/${DEFAULT_CREDENTIALS_FILE}`;
 
