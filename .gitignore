@@ -5,4 +5,4 @@ credentials.json
 token.json
 tx*
 transaction*
-/dist
+dist/
