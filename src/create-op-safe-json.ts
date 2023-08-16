@@ -122,7 +122,7 @@ async function createJsonOutput(auth: any, sheetName: string, sheetId: string, s
             const epochStartTimestamp = moment(epochStart, 'MM/DD/YYYY').endOf('day').unix();
             const now = moment().unix();
 
-            if (now < epochStartTimestamp) {
+            if (now < epochStartTimestamp && now + 172800 > epochStartTimestamp) {
                 const rewardTokenAmountScaled = parseUnits(`${rewardTokenAmount}`, rewardTokenDecimals);
 
                 // add the approve transcation
