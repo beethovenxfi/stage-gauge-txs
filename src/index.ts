@@ -11,7 +11,16 @@ import { createGaugeTxsFromGoogleSheet } from './create-gauge-txs-from-google-sh
 import inquirer from 'inquirer';
 import { createTxnBatchJsonFromGoogleSheet } from './create-op-safe-json';
 
-const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:1248');
+const connectFrame = {
+    url: 'http://127.0.0.1:1248', // Frame
+    headers: {
+        Origin: 'http://stageGaugeTxsApp', // <- Your app name
+    },
+    allowInsecureAuthentication: true,
+};
+
+const provider = new ethers.providers.JsonRpcProvider(connectFrame);
+
 const signer = provider.getSigner();
 
 type FarmAdd = {
