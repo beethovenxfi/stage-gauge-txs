@@ -1,0 +1,33 @@
+{
+    "version": "1.0",
+    "chainId": "250",
+    "createdAt": 1709706872220,
+    "meta": {
+        "name": "prepare farm changes",
+        "description": "",
+        "txBuilderVersion": "1.16.3",
+        "createdFromSafeAddress": "0x3Fa5c411857455e0E876412010BE600F4658Dddd",
+        "createdFromOwnerAddress": "",
+        "checksum": "0x109c3528d7f028e2f428d247ec1f59d3787c929f21cf85114f06a116b103ac29"
+    },
+    "transactions": [
+        {
+            "to": "0x24Dce9214bA5B93B4ee7F1A7A00c9BeB1c8F709C",
+            "value": "0",
+            "data": null,
+            "contractMethod": {
+                "inputs": [
+                    { "internalType": "uint256", "name": "eta", "type": "uint256" },
+                    {
+                        "internalType": "enum MasterChefOperator.TransactionType",
+                        "name": "txType",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "commitFarmChanges",
+                "payable": false
+            },
+            "contractInputsValues": { "eta": "1709712000", "txType": "0" }
+        }
+    ]
+}
